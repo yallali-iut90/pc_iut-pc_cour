@@ -1,0 +1,93 @@
+{% extends 'admin/layout_admin.html' %}
+
+{% block title %}
+    <title>Commentaires - {{ linge.nom }}</title>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+   <div class="row">
+       <div class="col-12 bg-light p-3 border rounded mb-4">
+           <h3>Gestion des avis : <span style="color: green">{{ linge.nom }}</span></h3>
+
+           {% if nb_commentaires.nb_commentaires_total %}
+               <strong>{{ nb_commentaires.nb_commentaires_total }}</strong> commentaire(s)
+               (dont {{ nb_commentaires.nb_commentaires_valider }} validés)
+           {% else %}
+               Pas encore de commentaire.
+           {% endif %}
+           <br>
+           Note moyenne : <strong>{{ linge.moyenne_notes or 'Pas de note' }}</strong>
+           ({{ linge.nb_notes or 0 }} avis)
+       </div>
+   </div>
+
+   <div class="row">
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Message & Réponse</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% if commentaires %}
+                {% for commentaire in commentaires %}
+                    {# On colore la ligne si elle est validée (valide == 1) #}
+                    <tr class="{% if commentaire.valide == 1 %}table-success{% endif %}">
+
+                        <td>
+                            <strong>{{ commentaire.nom }}</strong><br>
+                            <small class="text-muted">ID: {{ commentaire.id_utilisateur }}</small>
+                        </td>
+
+                        <td>
+                            <!-- Affichag du commentaire du client -->
+                            <div class="mb-2">
+                                {{ commentaire.commentaire }}
+                            </div>
+
+                            <!-- AFFICHAG DE LA RÉPONSE ADMIN  -->
+                            {% if commentaire.reponse_admin %}
+                                <div class="p-2 border-left" style="border-left: 4px solid #007bff; background-color: #f1f8ff; margin-top: 10px;">
+                                    <span style="color: #007bff; font-weight: bold;">Réponse du admin :</span><br>
+                                    {{ commentaire.reponse_admin }}
+                                </div>
+                            {% endif %}
+
+                            <small class="text-muted d-block mt-1">Posté le : {{ commentaire.date_publication }}</small>
+                        </td>
+
+                        <td>
+                            <!-- BOUTON SUPPRIMER -->
+                            <form action="/admin/linge/commentaires/delete" method="post" style="display: inline-block;">
+                                <input type="hidden" name="id_linge" value="{{ linge.id_linge }}">
+                                <input type="hidden" name="id_utilisateur" value="{{ commentaire.id_utilisateur }}">
+                                <input type="hidden" name="date_publication" value="{{ commentaire.date_publication }}">
+                                <button class="btn btn-danger btn-sm">supprimer</button>
+                            </form>
+
+                            <!-- BOUTON RÉPONDRE -->
+                            <form action="/admin/linge/commentaires/repondre" method="GET" style="display: inline-block;">
+                                <input type="hidden" name="id_linge" value="{{ linge.id_linge }}">
+                                <input type="hidden" name="id_utilisateur" value="{{ commentaire.id_utilisateur }}">
+                                <input type="hidden" name="date_publication" value="{{ commentaire.date_publication }}">
+                                <button class="btn btn-primary btn-sm">répondre</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr class="table-warning"><td colspan="3" class="text-center">Pas de commentaire pour le moment</td></tr>
+            {% endif %}
+            </tbody>
+        </table>
+
+        <div class="mt-4">
+            <a class="btn btn-success" href="/admin/linge/commentaires/valider?id_linge={{ linge.id_linge }}">Valider tous les commentaires</a>
+            <a class="btn btn-outline-primary" href="/admin/linge/show">Retour à la liste</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

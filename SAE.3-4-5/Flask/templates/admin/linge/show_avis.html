@@ -1,0 +1,92 @@
+{% extends "admin/layout_admin.html" %}
+{% block body %}
+<div class="container mt-4">
+    <!-- ENTETE DU PRODUIT -->
+    <div class="text-center bg-light p-3 rounded mb-4 shadow-sm">
+         <h2 class="card-title">
+             <span style="color: #0b2e13">{{ linge.nom }}</span> &nbsp;<span class="text-success">{{ linge.prix }} €</span>
+         </h2>
+        <div class="card-body">
+            {% if linge.image is not none %}
+                <img class="rounded mx-auto d-block shadow-sm" style="width:120px;height:120px;object-fit: cover;"
+                     src="{{ url_for('static', filename='images/') }}{{ linge.image }}" alt="{{ linge.nom }}">
+            {% else %}
+                <img class="rounded mx-auto d-block" style="width:120px;height:120px"
+                     src="{{ url_for('static', filename='images/no_photo.jpeg') }}">
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- TABLEAU DES COMMENTAIRES -->
+    <div class="row">
+        <div class="col-12">
+            <h3 class="mb-3">Modération des commentaires</h3>
+            <table class="table table-bordered shadow-sm">
+                <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Utilisateur</th>
+                    <th>Commentaire</th>
+                    <th>Note</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if commentaires %}
+                    {% for commentaire in commentaires %}
+                        <tr class="{% if commentaire.valide == 0 %}table-warning{% endif %}">
+                            <td>{{ commentaire.id_commentaire }}</td>
+                            <td><strong>{{ commentaire.login }}</strong></td>
+                            <td>
+                                {{ commentaire.commentaire }}
+                                {% if commentaire.reponse_admin %}
+                                    <div class="mt-2 p-2 bg-white border-left border-primary small">
+                                        <strong>Ma réponse :</strong> {{ commentaire.reponse_admin }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {% if commentaire.note < 3 %}bg-danger{% else %}bg-success{% endif %}">
+                                    {{ commentaire.note }} / 5
+                                </span>
+                            </td>
+                            <td>
+                                {% if commentaire.valide == 1 %}
+                                    <span class="text-success">Publié</span>
+                                {% else %}
+                                    <span class="text-muted italic">En attente</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <!-- Formulaire pour supprimer -->
+                                <form action="/admin/commentaire/delete" method="post" class="d-inline">
+                                    <input type="hidden" name="id_commentaire" value="{{ commentaire.id_commentaire }}">
+                                    <button class="btn btn-outline-danger btn-sm" onclick="return confirm('Supprimer ce message ?')">
+                                        Supprimer
+                                    </button>
+                                </form>
+
+                                <!-- Lien pour répondre/valider -->
+                                <a href="/admin/commentaire/repondre?id={{ commentaire.id_commentaire }}"
+                                   class="btn btn-primary btn-sm">
+                                   Répondre
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr class="table-info">
+                        <td colspan="6" class="text-center">Aucun commentaire pour cet article.</td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a class="btn btn-secondary" href="/admin/linge/show">Retour à la liste des linges</a>
+    </div>
+</div>
+{% endblock %}

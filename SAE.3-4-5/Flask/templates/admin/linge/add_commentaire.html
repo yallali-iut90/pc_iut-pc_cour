@@ -1,0 +1,50 @@
+{% extends 'admin/layout_admin.html' %}
+
+{% block title %}
+    <title>Répondre au commentaire</title>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="bg-light p-4 rounded shadow-sm">
+        <h3 class="text-primary mb-4">Modération : Répondre à un client</h3>
+
+        <!-- RAPPEL DU COMMENTAIRE DU CLIENT -->
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <strong>Commentaire du client</strong>
+                <span class="float-right">le {{ date_publication }}</span>
+            </div>
+            <div class="card-body">
+                <p class="card-text"><em>"{{ commentaire_client }}"</em></p>
+            </div>
+        </div>
+
+        <!-- FORMULAIRE DE RÉPONSE -->
+        <form action="/admin/linge/commentaires/repondre" method="post">
+
+            <!-- LES CHAMPS CACHÉS -->
+            <input type="hidden" name="id_utilisateur" value="{{ id_utilisateur }}">
+            <input type="hidden" name="id_linge" value="{{ id_linge }}">
+            <input type="hidden" name="date_publication" value="{{ date_publication }}">
+
+            <div class="mb-3">
+                <label for="reponse_admin" class="form-label font-weight-bold">
+                    Votre réponse officielle :
+                </label>
+
+                <textarea name="reponse_admin" class="form-control" rows="4"
+                          id="reponse_admin" placeholder="Écrivez votre réponse ici..." required></textarea>
+                <small class="text-muted">En validant, le commentaire deviendra public (valide=1).</small>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check"></i> Valider et Publier la réponse
+                </button>
+                <a class="btn btn-outline-secondary" href="/admin/linge/commentaires?id_linge={{ id_linge }}">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

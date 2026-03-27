@@ -1,0 +1,89 @@
+{#  linges_panier  : tableau de dictionnaires
+        * dictionnaire : nom quantite prix linge_id [stock]
+        *
+#}
+
+{% extends "client/layout_client.html" %}
+{% block body %}
+    <div class="container">
+        <div class="row align-self-right">
+        {% include('client/boutique/_panier.html') %}
+            <div class="col">
+              <h3>Les filtres</h3>
+              linges dont le nom est composé par :<br>
+                 {% include('client/boutique/_filtre.html') %}
+            </div>
+        </div>
+
+        <div class="bg-light p-3">
+            <h1>Les linges</h1>
+        </div>
+
+        <div class="row">
+                {% for linge in linges  %}
+                        <div class="card col-4 mt-4 p-1">
+                            <div class="card-body border-dark rounded p-1">
+                                <a href="/client/linge/details?id_linge={{ linge.id_linge }}" >
+                                <h3 class="card-title">
+                                    <span style="color: #0b2e13">{{ linge.nom }}</span><br>
+                                    {{ linge.prix }}€
+                                </h3>
+                                     {%  if linge.image is not none %}
+                                        <img class="card-img-top rounded mx-auto d-block"  style="width:100px;height:100px"  src="{{ url_for('static', filename = 'images/')}}{{ linge.image }}"  alt="image  de {{ linge.nom }}" >
+                                    {% else %} <img class="card-img-top rounded mx-auto d-block"   style="width:100px;height:100px"   src="{{ url_for('static', filename='images/no_photo.jpeg')}}"  alt="image  de {{ linge.nom }}" >
+                                    {% endif %}
+                                    <hr>
+                                </a>
+                                <div class="row">
+                                {% if  linge.stock is defined and linge.stock != None %}
+                                    {% if linge.stock > 0 %}
+                                        <form  action="/client/panier/add"  method="post" class="col-10">
+                                            <input type="hidden" name="id_linge" value="{{ linge.id_linge }}">
+                                            <div class="input-group">
+                                            <button class="btn  btn-success"  id="button-addon1">
+                                                <i class="fas fa-shopping-cart">Ajouter</i>
+                                            </button>
+                                            <input type="number" id="input-{{ linge.id_linge }}" step="1" min="0" max="{{ linge.stock }}" class="form-control" value="1" name="quantite"  aria-describedby="button-addon1">
+                                            </div>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                                     <div class="col-2 align-content-end">
+                                    {% if linge.liste_envie is defined %}
+                                         {%if  linge.liste_envie== 1%}
+                                             <a href="/client/envie/add?id_linge={{ linge.id_linge }}" style="text-decoration: none">Favori</a>
+                                         {% else %}
+                                             <a href="/client/envie/add?id_linge={{ linge.id_linge }}" style="text-decoration: none">Ajouter</a>
+                                         {% endif %}
+                                    {% endif %}
+                                     </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                            {% if linge.stock is defined and linge.stock != None %}
+                                 {% if linge.stock > 0 %}
+                                    <small class="text-muted">Stock restant : {{ linge.stock }}</small>
+                                 {% else %}
+                                    <small class="text-muted">linge  momentanément indisponible</small>
+                                 {% endif %}
+                                {% if linge.nb_declinaison is defined and linge.nb_declinaison != None %}
+                                    ({{ linge.nb_declinaison }} d.)
+                                {% endif %}
+                                <br>
+                            {% endif %}
+
+                            {# --- BOUTON COMMENTAIRE AJOUTÉ ICI --- #}
+                            <div class="mt-2">
+                                <a href="/client/linge/details?id_linge={{ linge.id_linge }}" class="btn btn-primary btn-sm w-100">
+                                    Voir les avis
+                                    {% if linge.nb_avis and linge.nb_avis > 0 %}
+                                        ({{ linge.nb_avis }})
+                                    {% endif %}
+                                </a>
+                            </div>
+                            </div>
+                        </div>
+                {% endfor %}
+        </div>
+    </div>
+{% endblock %}

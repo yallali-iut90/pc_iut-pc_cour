@@ -1,0 +1,94 @@
+{#
+linges (tableau de dictionnaires)
+* tableau de "linge"
+    * id_linge, nom, type_linge_id, prix
+    * option :
+        * stock ,
+        * nb_avis ,
+        * nb_declinaisons
+#}
+{% extends 'admin/layout_admin.html' %}
+
+{% block title %}
+    <title>afficher les linges</title>
+{% endblock %}
+
+{% block body %}
+<h3>linge</h3>
+<a  class="btn btn-outline-success" href="/admin/linge/add">ajouter un linge</a>
+<br><br>
+{#{{ linges }}#}
+<table class="table">
+    <thead class="thead-dark">
+        <tr>
+            <th>nom</th><th>id</th><th>type linge (id)</th><th>prix</th><th style="color: green">stock</th>
+            <th>nouveaux avis</th><th>nb déclinaisons</th><th>image</th><th>opération</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% if linges | length >= 1 %}
+        {% for ligne in linges %}
+           <tr>
+                  <td>{{ ligne.nom }}</td>
+                  <td>{{ ligne.id_linge }}</td>
+                  <td><span style="color: red">{{ ligne.libelle }}</span> ({{ ligne.type_linge_id }})</td>
+                  <td>{#{ ligne.prix }#}  {{  "{:,.2f} €".format(ligne.prix) }}</td>
+                  <td>
+                  {% if ligne.stock is defined %}
+                     {% if ligne.stock != None %}
+                        {% if ligne.stock > 0 %}
+                            <strong style="color: green">{{ ligne.stock }}</strong>
+                        {% else %}
+                            <strong class="text-danger">Rupture de stock (0)</strong>
+                        {% endif %}
+                     {% else %}
+                             <strong class="text-muted">ND</strong>
+                     {% endif %}
+                  {% else %}
+                      ND
+                  {% endif %}
+                  </td>
+                   <td>
+                  {% if ligne.nb_commentaires_nouveaux is defined %}
+                     {% if ligne.nb_commentaires_nouveaux > 0 %}
+                         <a href="/admin/linge/commentaires?id_linge={{ ligne.id_linge }}"><strong style="color: red">{{ ligne.nb_commentaires_nouveaux }} avis non lu(s) ⚠️ </strong></a>
+                     {% else %}
+                        <strong class="text-muted"></strong>
+                     {% endif %}
+                  {% else %}
+                      nb_avis ND
+                  {% endif %}
+                  </td>
+
+                 {# <td>{{ ligne.date_create }} {{ ligne.date_create.strftime('%d-%m-%Y') }} </td> #}
+                  <td>
+                      {% if ligne.nb_declinaisons is defined %}
+                        {{ ligne.nb_declinaisons }}
+                      {% else %}
+                         decli ND
+                      {% endif %}
+                  </td>
+                  <td>{{ ligne.image }}
+                        {%  if ligne.image is not none %}
+                            <img style="width:40px;height:40px"  src="{{ url_for('static', filename = 'images/' + ligne['image']) }}"  alt="image  de {{ ligne.nom }}" >
+                        {% else %}
+                            <img style="width:40px;height:40px"   src="{{ url_for('static', filename='images/no_photo.jpeg')}}"  alt="pas d image" >
+                        {% endif %}
+                  </td>
+                  <td>
+                      <a  class="btn btn-outline-danger" href="/admin/linge/delete?id_linge={{ ligne.id_linge }}">supprimer</a>
+                      <a  class="btn btn-outline-warning" href="/admin/linge/edit?id_linge={{ ligne.id_linge }}">editer</a>
+                      <a  class="btn btn-outline-warning" href="/admin/linge/commentaires?id_linge={{ ligne.id_linge }}">commentaires</a>
+                  </td>
+           </tr>
+        {% endfor %}
+    {% else %}
+            <tr>
+                  <td>
+                      pas de linge
+                  </td>
+           </tr>
+    {% endif %}
+    </tbody>
+</table>
+{% endblock %}

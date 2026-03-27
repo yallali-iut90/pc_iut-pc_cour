@@ -1,0 +1,189 @@
+{% extends "client/layout_client.html" %}
+
+{% block title %}
+    <title>Détails - {{ linge.nom }}</title>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <!-- CARTE PRODUIT -->
+    <div class="text-center card w-auto shadow-sm">
+         <div class="card-header bg-light">
+             <h2 class="card-title mb-0">
+                 <span style="color: #0b2e13">{{ linge.nom }}</span> &nbsp;|&nbsp; <span class="text-success">{{ linge.prix }} €</span>
+             </h2>
+         </div>
+        <div class="card-body">
+            {% if linge.image is not none %}
+                <img class="card-img-top rounded mx-auto d-block" style="width:150px;height:150px;object-fit: cover;" src="/static/images/{{ linge.image }}" alt="image de {{ linge.nom }}">
+            {% else %}
+                <img class="card-img-top rounded mx-auto d-block" style="width:150px;height:150px" src="/static/images/no_photo.jpeg" alt="Pas de photo">
+            {% endif %}
+
+            {% if commandes_linges.nb_commandes_linge is defined and commandes_linges.nb_commandes_linge > 0 %}
+                 <div class="badge bg-info text-dark mt-3 p-2">
+                    <i class="fas fa-shopping-bag"></i> Vous avez commandé ce produit <strong>{{ commandes_linges.nb_commandes_linge }}</strong> fois
+                 </div>
+            {% endif %}
+        </div>
+        <div class="card-footer text-start">
+            <h6><strong>Description :</strong> {{ linge.description }}</h6>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- SECTION DES NOTES (CALCULÉES EN SQL) -->
+    <div class="row bg-light p-3 rounded border shadow-sm">
+        <div class="col-12 mb-3">
+            {% if linge.moyenne_notes == 0 or linge.moyenne_notes == None %}
+                <span class="badge bg-secondary">Aucune note pour le moment</span>
+            {% else %}
+                <h5 class="mb-0 text-dark">
+                     Note moyenne : <strong>{{ linge.moyenne_notes }} / 5</strong>
+                    <small class="text-muted">({{ linge.nb_notes }} avis au total)</small>
+                </h5>
+            {% endif %}
+        </div>
+
+        {% if commandes_linges.nb_commandes_linge is defined and commandes_linges.nb_commandes_linge > 0 %}
+            <div class="col-12 mt-2">
+                <form action="/client/note/save" method="post" class="row align-items-center">
+                    <input type="hidden" name="id_linge" value="{{ linge.id_linge }}">
+                    <div class="col-auto">
+                        <label><strong>{{ 'Modifier votre note :' if note else 'Attribuer une note :' }}</strong></label>
+                    </div>
+                    <div class="col-auto">
+                        <input type="number" name="note" step="1" min="1" max="5" class="form-control" value="{{ note if note else '' }}" required>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn {{ 'btn-warning' if note else 'btn-primary' }} btn-sm">
+                            {{ 'Mettre à jour' if note else 'Valider la note' }}
+                        </button>
+                    </div>
+                </form>
+
+                {% if note %}
+                <div class="mt-2">
+                    <form action="/client/note/delete" method="post">
+                        <input type="hidden" name="id_linge" value="{{ linge.id_linge }}">
+                        <button type="submit" class="btn btn-link text-danger btn-sm p-0">Supprimer ma note</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="col-12">
+                <small class="text-muted"><i class="fas fa-lock"></i> Achetez cet article pour pouvoir le noter.</small>
+            </div>
+        {% endif %}
+    </div>
+
+    <br>
+
+    <!-- SECTION COMMENTAIRES -->
+    <div class="row p-3 rounded border shadow-sm" style="background-color: #faf1d7">
+        <div class="col-12 mb-3">
+            <h4 class="mb-1">Espace Commentaires</h4>
+
+            <!-- AFFICHAGE DES COMPTEURS (CALCULÉS EN SQL) -->
+            <div class="alert alert-info bg-white mt-3 shadow-sm">
+                <div class="row text-center">
+                    <div class="col-md-4 border-end">
+                        <small class="text-muted d-block">Total avis validés</small>
+                        <span class="h5 text-success">{{ nb_commentaires.total_valide }}</span>
+                    </div>
+                    <div class="col-md-4 border-end">
+                        <small class="text-muted d-block">Vos messages</small>
+                        <span class="h5">{{ nb_commentaires.utilisateur }} / 3</span>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Total messages (tous)</small>
+                        <span class="h5">{{ nb_commentaires.total }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FORMULAIRE D'AJOUT -->
+        {% if commandes_linges.nb_commandes_linge is defined and commandes_linges.nb_commandes_linge > 0 %}
+            {% if nb_commentaires.utilisateur < 3 %}
+                <div class="col-12 mb-4">
+                    <form action="/client/commentaire/add" method="post" class="bg-white p-3 border rounded shadow-sm">
+                        <input type="hidden" name="id_linge" value="{{ linge.id_linge }}">
+                        <div class="mb-3">
+                            <label for="input_commentaire" class="form-label font-weight-bold">Votre avis :</label>
+                            <textarea name="commentaire" class="form-control" id="input_commentaire" rows="3" placeholder="Partagez votre expérience..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success">Publier mon commentaire</button>
+                    </form>
+                </div>
+            {% else %}
+                 <div class="col-12"><div class="alert alert-warning">Vous avez atteint la limite de 3 commentaires.</div></div>
+            {% endif %}
+        {% endif %}
+
+        <!-- TABLEAU DES COMMENTAIRES -->
+        <div class="col-12 mt-4">
+            <h5>Derniers avis des clients</h5>
+            <table class="table bg-white mt-2 border shadow-sm">
+                {% if commentaires %}
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 25%">Utilisateur</th>
+                            <th>Commentaire</th>
+                            <th style="width: 15%">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for commentaire in commentaires %}
+                            <tr>
+                                <td>
+                                    <strong>{{ commentaire.nom }}</strong>
+                                    <br><small class="text-muted">{{ commentaire.date_publication }}</small>
+
+                                    {% if commentaire.valide == 0 %}
+                                        <br><span class="badge bg-warning text-dark">En attente de modération</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="mb-2">{{ commentaire.contenu }}</div>
+
+                                    <!-- RÉPONSE DE L'ADMINISTRATEUR -->
+                                    {% if commentaire.reponse_admin %}
+                                        <div class="p-3 mt-2 bg-light rounded border-start border-primary border-4" style="border-left: 5px solid #007bff; background-color: #f8f9fa;">
+                                            <span class="text-primary font-weight-bold">
+                                                <i class="fas fa-comment-dots"></i> <strong>Réponse de l'administrateur :</strong>
+                                            </span>
+                                            <p class="mb-0 mt-1"><em>{{ commentaire.reponse_admin }}</em></p>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if commentaire.utilisateur_id == session['id_user'] %}
+                                          <form action="/client/commentaire/delete" method="post">
+                                              <input type="hidden" name="id_linge" value="{{ linge.id_linge }}">
+                                              <input type="hidden" name="id_commentaire" value="{{ commentaire.id_commentaire }}">
+                                              <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                                          </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                {% else %}
+                    <tbody>
+                        <tr>
+                            <td colspan="3" class="text-center p-4 text-muted">Aucun commentaire publié pour cet article.</td>
+                        </tr>
+                    </tbody>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4 mb-5 text-center">
+        <a class="btn btn-outline-primary btn-lg" href="/client/linge/show">Retour à la boutique</a>
+    </div>
+</div>
+{% endblock %}
